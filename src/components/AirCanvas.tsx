@@ -108,15 +108,25 @@ export function AirCanvas({ quietZoneRef, airDataRef, onDataUpdate }: Props): Re
 
   const particleDensity = (useToolcraftValue("particleDensity") as number) ?? 1.0;
   const driftSpeed = (useToolcraftValue("driftSpeed") as number) ?? 1.0;
+  // The render loop is set up once, so it reads the sliders through refs to see changes.
+  const particleDensityRef = React.useRef(particleDensity);
+  const driftSpeedRef = React.useRef(driftSpeed);
+  particleDensityRef.current = particleDensity;
+  driftSpeedRef.current = driftSpeed;
+  const onDataUpdateRef = React.useRef(onDataUpdate);
+  onDataUpdateRef.current = onDataUpdate;
+  const fetchIdRef = React.useRef(0);
 
   // --- Fetch air quality data ---
   const fetchAirData = React.useCallback(async (lat: number, lng: number) => {
+    const fetchId = ++fetchIdRef.current;
+    let data: AirData;
     try {
       const url = `${AQ_BASE}?latitude=${lat}&longitude=${lng}&current=european_aqi,pm2_5,pm10,ozone,nitrogen_dioxide,carbon_monoxide`;
       const res = await fetch(url);
       const json = await res.json();
       if (!json.current) throw new Error("No data");
-      const data: AirData = {
+      data = {
         aqi: json.current.european_aqi ?? 0,
         pm25: json.current.pm2_5 ?? 0,
         pm10: json.current.pm10 ?? 0,
@@ -126,27 +136,32 @@ export function AirCanvas({ quietZoneRef, airDataRef, onDataUpdate }: Props): Re
         isFallback: false,
         locationName: getLocationName(lat, lng),
       };
-      airDataStateRef.current = data;
-      if (airDataRef) airDataRef.current = data;
-      if (onDataUpdate) onDataUpdate(data);
       lastFetchRef.current = performance.now();
     } catch {
-      const fallback: AirData = {
+      data = {
         ...FALLBACK_DATA,
         locationName: getLocationName(lat, lng),
       };
-      airDataStateRef.current = fallback;
-      if (airDataRef) airDataRef.current = fallback;
-      if (onDataUpdate) onDataUpdate(fallback);
     }
-  }, [airDataRef, onDataUpdate]);
+    // Ignore responses for a location the user has already moved away from.
+    if (fetchId !== fetchIdRef.current) return;
+    airDataStateRef.current = data;
+    if (airDataRef) airDataRef.current = data;
+    onDataUpdateRef.current?.(data);
+  }, [airDataRef]);
 
   const lat = (useToolcraftValue("latitude") as number) ?? 37.77;
   const lng = (useToolcraftValue("longitude") as number) ?? -122.42;
 
-  // Fetch on mount and when location changes
+  // Fetch on mount and when location changes (debounced while a slider is dragged),
+  // then refresh the current location every minute.
   React.useEffect(() => {
-    fetchAirData(lat, lng);
+    const timeout = setTimeout(() => fetchAirData(lat, lng), 300);
+    const interval = setInterval(() => fetchAirData(lat, lng), 60000);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, [lat, lng, fetchAirData]);
 
   // --- Canvas render loop ---
@@ -171,9 +186,9 @@ export function AirCanvas({ quietZoneRef, airDataRef, onDataUpdate }: Props): Re
     window.addEventListener("resize", resize);
 
     // Init particles
-    const particleCount = Math.floor(40 * particleDensity);
+    const particleCount = Math.floor(40 * particleDensityRef.current);
     particlesRef.current = Array.from({ length: particleCount }, () =>
-      createParticle(W, H, 0.6 * driftSpeed)
+      createParticle(W, H, 0.6 * driftSpeedRef.current)
     );
     const particles = particlesRef.current;
 
@@ -184,6 +199,8 @@ export function AirCanvas({ quietZoneRef, airDataRef, onDataUpdate }: Props): Re
       const dt = Math.min((time - lastTime) / 1000, 0.05);
       lastTime = time;
 
+      const particleDensity = particleDensityRef.current;
+      const driftSpeed = driftSpeedRef.current;
       const ad = airDataStateRef.current;
       const aqi = ad.aqi;
       const pm25 = ad.pm25;

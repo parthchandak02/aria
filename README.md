@@ -49,13 +49,9 @@ a quiet green night; polluted air glows amber and red. No API key is needed.
 Each particle is drawn in three layers (soft outer glow, coloured core, white centre) and wraps
 around the edges. Click or tap the canvas for a ripple and a panel with every pollutant for the
 current location; it fades after three seconds. Latitude and longitude sliders in the side panel
-pick any point on Earth and refetch. The stamp in the bottom-left says `live` or `fallback`.
-
-> [!NOTE]
-> This is a one-day experiment and some controls are unfinished. The preset
-> buttons (San Francisco, Beijing, Delhi, Sydney) are not wired to an action handler; the
-> density and drift sliders are read once when the canvas mounts; and the AQI headline
-> refreshes every minute from San Francisco regardless of the chosen location.
+pick any point on Earth and refetch; the preset buttons jump to San Francisco, Beijing, Delhi or
+Sydney. Density and drift sliders apply immediately. The AQI headline and the stamp follow the
+chosen location and refresh every minute; the stamp says `live` or `fallback`.
 
 ## Run it
 

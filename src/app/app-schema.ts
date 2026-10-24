@@ -64,29 +64,16 @@ export const appSchema = defineToolcraft({
         {
           title: "Presets",
           controls: {
-            presetSF: {
-              type: "action",
-              target: "presetSF",
-              label: "San Francisco",
-              actions: [{ value: "presetSF", variant: "outline" }],
-            },
-            presetBeijing: {
-              type: "action",
-              target: "presetBeijing",
-              label: "Beijing",
-              actions: [{ value: "presetBeijing", variant: "outline" }],
-            },
-            presetDelhi: {
-              type: "action",
-              target: "presetDelhi",
-              label: "Delhi",
-              actions: [{ value: "presetDelhi", variant: "outline" }],
-            },
-            presetSydney: {
-              type: "action",
-              target: "presetSydney",
-              label: "Sydney",
-              actions: [{ value: "presetSydney", variant: "outline" }],
+            preset: {
+              type: "actions",
+              target: "preset",
+              label: "City",
+              actions: [
+                { value: "presetSF", label: "San Francisco", variant: "outline" },
+                { value: "presetBeijing", label: "Beijing", variant: "outline" },
+                { value: "presetDelhi", label: "Delhi", variant: "outline" },
+                { value: "presetSydney", label: "Sydney", variant: "outline" },
+              ],
             },
           },
         },

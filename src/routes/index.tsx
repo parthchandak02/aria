@@ -1,5 +1,8 @@
 import * as React from "react";
-import { ToolcraftApp } from "@/toolcraft/runtime/react";
+import {
+  ToolcraftApp,
+  type ToolcraftPanelActionHandler,
+} from "@/toolcraft/runtime/react";
 import { appComposition } from "../app/app-composition";
 import { AirCanvas } from "../components/AirCanvas";
 
@@ -13,6 +16,20 @@ interface AirData {
   isFallback: boolean;
   locationName: string;
 }
+
+const PRESETS: Record<string, { latitude: number; longitude: number }> = {
+  presetSF: { latitude: 37.77, longitude: -122.42 },
+  presetBeijing: { latitude: 39.9, longitude: 116.4 },
+  presetDelhi: { latitude: 28.6, longitude: 77.2 },
+  presetSydney: { latitude: -33.86, longitude: 151.2 },
+};
+
+const handlePanelAction: ToolcraftPanelActionHandler = ({ action, dispatch }) => {
+  const preset = PRESETS[action.value];
+  if (!preset) return;
+  dispatch({ type: "controls.setValue", target: "latitude", value: preset.latitude, label: "Latitude" });
+  dispatch({ type: "controls.setValue", target: "longitude", value: preset.longitude, label: "Longitude" });
+};
 
 export function AppHome(): React.JSX.Element {
   const quietZoneRef = React.useRef<((data: any) => void) | null>(null);
@@ -61,35 +78,6 @@ export function AppHome(): React.JSX.Element {
     };
   }, [showQuietZone]);
 
-  // Fetch data for chrome (hero + stamp)
-  React.useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      const lat = 37.77;
-      const lng = -122.42;
-      try {
-        const res = await fetch(
-          `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=european_aqi,pm2_5,pm10`
-        );
-        const json = await res.json();
-        if (cancelled || !json.current) return;
-        const aqi = json.current.european_aqi ?? 0;
-        setAqiDisplay(String(aqi));
-        setStampText(
-          `Open-Meteo Air Quality -- San Francisco -- AQI ${aqi} -- live`
-        );
-      } catch {
-        // fallback handled by canvas
-      }
-    }
-    load();
-    const interval = setInterval(load, 60000);
-    return () => {
-      cancelled = true;
-      clearInterval(interval);
-    };
-  }, []);
-
   return (
     <div className="relative w-full h-full">
       <ToolcraftApp
@@ -109,6 +97,7 @@ export function AppHome(): React.JSX.Element {
           />
         }
         renderDefaultCanvasMedia={false}
+        onPanelAction={handlePanelAction}
       />
 
       {/* Chrome overlays */}
