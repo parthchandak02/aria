@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useToolcraftValue } from "@/toolcraft/runtime/react";
+import { useToolcraft, useToolcraftValue } from "@/toolcraft/runtime/react";
 
 // --- Midnight palette adapted for air quality ---
 const PALETTE = {
@@ -163,6 +163,35 @@ export function AirCanvas({ quietZoneRef, airDataRef, onDataUpdate }: Props): Re
       clearInterval(interval);
     };
   }, [lat, lng, fetchAirData]);
+
+  // --- Fit the output to the viewport ---
+  // The Toolcraft template defaults to a fixed 1920x1080 output, which is scaled down into the
+  // workspace and leaves most of the screen black. Size the output to the window instead.
+  const { dispatch } = useToolcraft();
+  React.useEffect(() => {
+    let frame = 0;
+    const fit = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        dispatch({
+          type: "canvas.setSize",
+          size: { width: window.innerWidth, height: window.innerHeight, unit: "px" },
+        });
+        // The template's workspace has a 1024px minimum width; on narrower screens shift the
+        // output so it lines up with the visible window instead of the workspace centre.
+        const workspace = canvasRef.current?.closest<HTMLElement>('[class*="group/canvas"]');
+        const overflow = workspace ? workspace.clientWidth - window.innerWidth : 0;
+        dispatch({ type: "canvas.setOffset", offset: { x: -Math.max(0, overflow) / 2, y: 0 } });
+        dispatch({ type: "canvas.zoomReset" });
+      });
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("resize", fit);
+    };
+  }, [dispatch]);
 
   // --- Canvas render loop ---
   React.useEffect(() => {

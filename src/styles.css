@@ -165,10 +165,11 @@ button {
   font-family: system-ui, sans-serif;
   font-size: 11px;
   color: rgba(255, 255, 255, 0.45);
-  max-width: 65ch;
+  width: max-content;
+  max-width: min(65ch, calc(100vw - 32px));
   text-align: center;
   pointer-events: none;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 #legend {

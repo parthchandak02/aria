@@ -81,6 +81,7 @@ export function AppHome(): React.JSX.Element {
   return (
     <div className="relative w-full h-full">
       <ToolcraftApp
+        className="h-dvh min-h-dvh"
         schema={appComposition.schema}
         canvasContent={
           <AirCanvas
