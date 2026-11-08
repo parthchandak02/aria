@@ -1,91 +1,25 @@
-import { defineToolcraft } from "@/toolcraft/runtime";
+import { defineToolcraft, imageExportModule } from "@/toolcraft/runtime";
+
+import { backgroundControls, fieldControls, placeControls } from "../aria/aria-controls";
+import appDefaults from "./app-defaults.json" with { type: "json" };
+import { appIdentity } from "./app-identity";
 
 export const appSchema = defineToolcraft({
-  canvas: {
-    enabled: true,
-    draggable: false,
-    upload: false,
-    sizing: { mode: "editable-output" },
-  },
-  panels: {
-    controls: {
-      title: "Controls",
-      sections: [
-        {
-          title: "Location",
-          controls: {
-            latitude: {
-              type: "slider",
-              target: "latitude",
-              label: "Latitude",
-              defaultValue: 37.77,
-              min: -90,
-              max: 90,
-              step: 0.1,
-              valueLabel: "deg",
-            },
-            longitude: {
-              type: "slider",
-              target: "longitude",
-              label: "Longitude",
-              defaultValue: -122.42,
-              min: -180,
-              max: 180,
-              step: 0.1,
-              valueLabel: "deg",
-            },
-          },
-        },
-        {
-          title: "Display",
-          controls: {
-            particleDensity: {
-              type: "slider",
-              target: "particleDensity",
-              label: "PM2.5 Density",
-              defaultValue: 1.0,
-              min: 0.2,
-              max: 2.0,
-              step: 0.1,
-              valueLabel: "x",
-            },
-            driftSpeed: {
-              type: "slider",
-              target: "driftSpeed",
-              label: "Drift Speed",
-              defaultValue: 1.0,
-              min: 0.2,
-              max: 3.0,
-              step: 0.1,
-              valueLabel: "x",
-            },
-          },
-        },
-        {
-          title: "Presets",
-          controls: {
-            preset: {
-              type: "actions",
-              target: "preset",
-              label: "City",
-              actions: [
-                { value: "presetSF", label: "San Francisco", variant: "outline" },
-                { value: "presetBeijing", label: "Beijing", variant: "outline" },
-                { value: "presetDelhi", label: "Delhi", variant: "outline" },
-                { value: "presetSydney", label: "Sydney", variant: "outline" },
-              ],
-            },
-          },
-        },
-      ],
+  base: {
+    canvas: { draggable: true, enabled: true, renderScale: true, size: { height: 1080, unit: "px", width: 1920 }, sizing: { mode: "editable-output" }, upload: false },
+    identity: appIdentity,
+    panels: {
+      controls: {
+        sections: [
+          { controls: backgroundControls, id: "runtime.setup", title: "Settings" },
+          { controls: placeControls, id: "place", title: "Place" },
+          { controls: fieldControls, id: "field", title: "Field" },
+        ],
+        title: "Aria",
+      },
     },
-    layers: false,
-    timeline: false,
+    toolbar: { history: true, radar: true, theme: true, zoom: true },
   },
-  toolbar: {
-    history: false,
-    radar: false,
-    zoom: false,
-  },
-  persistence: { storage: "none" },
+  defaults: appDefaults,
+  modules: [imageExportModule()],
 });

@@ -1,0 +1,13 @@
+{
+  "values": {
+    "appearance.background": "#0E1116",
+    "export.image.format": "png",
+    "export.image.resolution": "4k",
+    "export.includeBackground": true,
+    "field.pollutant": "pm25",
+    "place.latitude": 37.8,
+    "place.longitude": -122.4
+  },
+  "canvas": { "size": { "width": 1920, "height": 1080 } },
+  "data": "Live Open-Meteo Air Quality response for 37.8, -122.4 at capture time"
+}
